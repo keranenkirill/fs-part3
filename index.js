@@ -36,14 +36,19 @@ app.get("/api/persons/:id", (request, response) => {
 });
 
 app.delete('/api/persons/:id', (request, response) => {
+   console.log(persons)
    const id = Number(request.params.id)
    let person = persons.find((person) => person.id === id);
-
+   
    if (person){
+      console.log("deleting...")
       console.log(person.id, person.name)
-      person = persons.filter(person => person.id !== id)
+
+      persons_after_delete = persons.filter(person => person.id !== id)
       response.status(204).end()
+      
       console.log('deleted succesfully')
+      console.log(persons_after_delete)
    } else{
       response.status(404).send("No person in book by the given ID.");
    }
