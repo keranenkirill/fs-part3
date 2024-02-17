@@ -35,6 +35,20 @@ app.get("/api/persons/:id", (request, response) => {
   }
 });
 
+app.delete('/api/persons/:id', (request, response) => {
+   const id = Number(request.params.id)
+   let person = persons.find((person) => person.id === id);
+
+   if (person){
+      console.log(person.id, person.name)
+      person = persons.filter(person => person.id !== id)
+      response.status(204).end()
+      console.log('deleted succesfully')
+   } else{
+      response.status(404).send("No person in book by the given ID.");
+   }
+ })
+
 const PORT = 3001;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
