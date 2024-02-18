@@ -18,12 +18,24 @@ const generateID = () => {
 app.post("/api/persons", (request, response) => {
   const body = request.body;
   if (!body.name || !body.number) {
-    // jos nimi tai numero ovat ""
+    // jos nimi tai numero puuttuvat
     console.log("name or number missing");
     return response.status(400).json({
       error: "name or number missing",
     });
   }
+
+  // tarkistetaan jos nimi tai numero ovat jo olemassa puhelinkirjassa... (erikseenkin olisi voinut tarkastella nimeä ja nueroa)
+  const existingUserData =
+    persons.some((person) => person.number === body.number) ||
+    persons.some((person) => person.name === body.name);
+  if (existingUserData) {
+    console.log("Name or number already in phonebook");
+    return response.status(400).json({
+      error: "Name or number already in phonebook"
+    });
+  }
+
   const person = {
     id: generateID(),
     name: body.name,
