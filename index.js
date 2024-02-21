@@ -1,8 +1,32 @@
 const express = require("express");
 let persons = require("./personsdata");
 const app = express();
+const morgan = require('morgan')
 
-app.use(express.json());
+//tulostaa servun console logiin tietoa requestin tyypistä, kohdennetusta pathistä ja sisällöstä
+const requestLogger = (request, response, next) => {
+  console.log('Method:', request.method) // mitä recuestia käytettiin (GET, POST, RJNE..)
+  console.log('Path:  ', request.path)   // mille pathille "sivulle" pyyntö oli tehty 
+  console.log('Body:  ', request.body)   // millainen sisältö oli toteutettu
+  console.log('---')
+  next()
+}
+
+app.use(express.json())
+app.use(requestLogger)
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms'))
+
+// virheenkäsittelijä olemattomille patheille "sivuille"
+const unknownEndpoint = (request, response) => {
+  response.status(404).send({ error: 'unknown endpoint' })
+}
+/*tuloksena y.o:lle virheenkäsittelijälle on seuraava tulostus servun console logissa:
+    Method: GET
+    Path:   /nonexistent
+    Body:   {}
+*/
+
+
 
 const generateID = () => {
   do {
@@ -88,6 +112,8 @@ app.delete("/api/persons/:id", (request, response) => {
 })
 
 
+
+app.use(unknownEndpoint)
 
 const PORT = 3001;
 app.listen(PORT, () => {
