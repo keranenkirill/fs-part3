@@ -3,6 +3,7 @@ let persons = require("./personsdata");
 const app = express();
 const morgan = require('morgan')
 
+
 //tulostaa servun console logiin tietoa requestin tyypistä, kohdennetusta pathistä ja sisällöstä
 const requestLogger = (request, response, next) => {
   console.log('Method:', request.method) // mitä recuestia käytettiin (GET, POST, RJNE..)
@@ -12,9 +13,15 @@ const requestLogger = (request, response, next) => {
   next()
 }
 
+//kustomoitu tokeni, jolla saadaan hakluttu request data tulostettua morgania hyödyntäen
+morgan.token('reqContent', (request) => {
+  return JSON.stringify(request.body);
+});
+
 app.use(express.json())
 app.use(requestLogger)
-app.use(morgan(':method :url :status :res[content-length] - :response-time ms'))
+app.use(morgan('- :date[web] -'))
+app.use(morgan(':method :url :status :res[content-length] - :response-time ms :reqContent'))
 
 // virheenkäsittelijä olemattomille patheille "sivuille"
 const unknownEndpoint = (request, response) => {
@@ -25,7 +32,6 @@ const unknownEndpoint = (request, response) => {
     Path:   /nonexistent
     Body:   {}
 */
-
 
 
 const generateID = () => {
