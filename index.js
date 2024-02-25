@@ -2,6 +2,7 @@ const express = require("express");
 let persons = require("./personsdata");
 const app = express();
 const morgan = require('morgan')
+const cors = require('cors')
 
 
 //tulostaa servun console logiin tietoa requestin tyypistä, kohdennetusta pathistä ja sisällöstä
@@ -18,6 +19,8 @@ morgan.token('reqContent', (request) => {
   return JSON.stringify(request.body);
 });
 
+app.use(express.static('dist'))
+app.use(cors())
 app.use(express.json())
 app.use(requestLogger)
 app.use(morgan('- :date[web] -'))
@@ -121,7 +124,7 @@ app.delete("/api/persons/:id", (request, response) => {
 
 app.use(unknownEndpoint)
 
-const PORT = 3001;
+const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
