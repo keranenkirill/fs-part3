@@ -3,6 +3,7 @@ let persons = require("./personsdata");
 const app = express();
 const morgan = require('morgan')
 const cors = require('cors')
+const mongodb = require("./mongo")
 
 
 //tulostaa servun console logiin tietoa requestin tyypistä, kohdennetusta pathistä ja sisällöstä
