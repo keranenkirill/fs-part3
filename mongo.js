@@ -63,19 +63,19 @@ const add_new_person = (password, name, number) => {
 if (process.argv.length < 3) {
   console.log("give password as argument");
   process.exit(1);
-
 } else if (process.argv.length === 3) {
   const password = process.argv[2];
-  console.log("")
-  console.log("phonebook:")
+  console.log("");
+  console.log("phonebook:");
   get_all_persons(password);
-
 } else if (process.argv.length === 5) {
   const password = process.argv[2];
   const nameArg = process.argv[3];
   const number = process.argv[4];
 
   //tarkistus siltä varalta, että nimi on annettu sukunimen kanssa lainausmerkeissä
-  const name = nameArg.includes('"') ? nameArg.substring(1, nameArg.length - 1) : nameArg;
+  const name = nameArg.includes('"')
+    ? nameArg.substring(1, nameArg.length - 1)
+    : nameArg;
   add_new_person(password, name, number);
 }
