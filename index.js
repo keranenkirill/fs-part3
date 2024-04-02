@@ -8,6 +8,9 @@ const cors = require("cors");
 
 const PhoneBook = require("C:/Users/keran/Documents/HY_KURSSIT/FullStack/fs-part3/modules/phonebook.js");
 
+app.use(express.static("dist"));
+
+
 //tulostaa servun console logiin tietoa requestin tyypistä, kohdennetusta pathistä ja sisällöstä
 const requestLogger = (request, response, next) => {
   console.log("Method:", request.method); // mitä recuestia käytettiin (GET, POST, RJNE..)
@@ -17,12 +20,16 @@ const requestLogger = (request, response, next) => {
   next();
 };
 
-//kustomoitu tokeni, jolla saadaan hakluttu request data tulostettua morgania hyödyntäen
-morgan.token("reqContent", (request) => {
-  return JSON.stringify(request.body);
-});
 
-app.use(express.static("dist"));
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  }
+  next(error)
+}
+
+
 app.use(cors());
 app.use(express.json());
 app.use(requestLogger);
@@ -32,6 +39,7 @@ app.use(
     ":method :url :status :res[content-length] - :response-time ms :reqContent"
   )
 );
+
 
 // virheenkäsittelijä olemattomille patheille "sivuille"
 const unknownEndpoint = (request, response) => {
@@ -43,6 +51,13 @@ const unknownEndpoint = (request, response) => {
     Body:   {}
 */
 
+
+//kustomoitu tokeni, jolla saadaan hakluttu request data tulostettua morgania hyödyntäen
+morgan.token("reqContent", (request) => {
+  return JSON.stringify(request.body);
+});
+
+
 const generateID = () => {
   do {
     // generoidaan arvo
@@ -53,6 +68,43 @@ const generateID = () => {
   );
   return randomID;
 };
+
+
+app.get("/", (request, response) => {
+  response.send("<h1>Hello World!</h1>");
+});
+
+
+app.get("/api/persons", (request, response) => {
+  PhoneBook.find({}).then((persons) => {
+    response.json(persons);
+  });
+});
+
+
+app.get("/api/persons/:id", (request, response) => {
+  const id = Number(request.params.id);
+  console.log(id);
+  const person = persons.find((person) => person.id === id);
+  console.log(person);
+
+  if (person) {
+    response.json(person);
+  } else {
+    response.status(404).send("No person in book by the given ID.");
+    console.log("No person in book by the given ID.");
+  }
+});
+
+
+app.get("/info", (request, response) => {
+  const currentTime = new Date();
+  response.send(
+    `Number of persons in the list: ${persons.length}
+     <br>
+     Current Time: ${currentTime}`
+  );
+});
 
 app.post("/api/persons", (request, response) => {
   const body = request.body;
@@ -90,50 +142,17 @@ app.post("/api/persons", (request, response) => {
   })
 });
 
-app.get("/", (request, response) => {
-  response.send("<h1>Hello World!</h1>");
-});
 
-//app.get("/api/persons", (request, response) => {
-//  response.json(persons);
-//});
-app.get("/api/persons", (request, response) => {
-  PhoneBook.find({}).then((persons) => {
-    response.json(persons);
-  });
-});
-
-app.get("/info", (request, response) => {
-  const currentTime = new Date();
-  response.send(
-    `Number of persons in the list: ${persons.length}
-     <br>
-     Current Time: ${currentTime}`
-  );
-});
-
-app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  console.log(id);
-  const person = persons.find((person) => person.id === id);
-  console.log(person);
-
-  if (person) {
-    response.json(person);
-  } else {
-    response.status(404).send("No person in book by the given ID.");
-    console.log("No person in book by the given ID.");
-  }
-});
-
-app.delete("/api/persons/:id", (request, response) => {
-  console.log(persons);
-  const id = Number(request.params.id);
-  persons = persons.filter((person) => person.id !== id);
-  response.status(204).end();
+app.delete("/api/persons/:id", (request, response, next) => {
+  PhoneBook.findByIdAndDelete(request.params.id)
+    .then(result =>{
+      response.status(204).end()
+    })
+    .catch(error => next(error))
 });
 
 app.use(unknownEndpoint);
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
