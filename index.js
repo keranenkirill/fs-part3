@@ -1,4 +1,4 @@
-require('dotenv').config()
+require("dotenv").config();
 const express = require("express");
 let persons = require("./personsdata");
 const app = express();
@@ -7,9 +7,9 @@ const cors = require("cors");
 //const mongodb = require("./mongo")
 
 const PhoneBook = require("C:/Users/keran/Documents/HY_KURSSIT/FullStack/fs-part3/modules/phonebook.js");
+const phonebook = require("C:/Users/keran/Documents/HY_KURSSIT/FullStack/fs-part3/modules/phonebook.js");
 
 app.use(express.static("dist"));
-
 
 //tulostaa servun console logiin tietoa requestin tyypistä, kohdennetusta pathistä ja sisällöstä
 const requestLogger = (request, response, next) => {
@@ -20,15 +20,13 @@ const requestLogger = (request, response, next) => {
   next();
 };
 
-
 const errorHandler = (error, request, response, next) => {
-  console.error(error.message)
-  if (error.name === 'CastError') {
-    return response.status(400).send({ error: 'malformatted id' })
+  console.error(error.message);
+  if (error.name === "CastError") {
+    return response.status(400).send({ error: "malformatted id" });
   }
-  next(error)
-}
-
+  next(error);
+};
 
 app.use(cors());
 app.use(express.json());
@@ -40,7 +38,6 @@ app.use(
   )
 );
 
-
 // virheenkäsittelijä olemattomille patheille "sivuille"
 const unknownEndpoint = (request, response) => {
   response.status(404).send({ error: "unknown endpoint" });
@@ -51,12 +48,10 @@ const unknownEndpoint = (request, response) => {
     Body:   {}
 */
 
-
 //kustomoitu tokeni, jolla saadaan hakluttu request data tulostettua morgania hyödyntäen
 morgan.token("reqContent", (request) => {
   return JSON.stringify(request.body);
 });
-
 
 const generateID = () => {
   do {
@@ -69,44 +64,44 @@ const generateID = () => {
   return randomID;
 };
 
-
 app.get("/", (request, response) => {
   response.send("<h1>Hello World!</h1>");
 });
 
-
-app.get("/api/persons", (request, response) => {
-  PhoneBook.find({}).then((persons) => {
-    response.json(persons);
-  });
+app.get("/api/persons", (request, response, next) => {
+  PhoneBook.find({})
+    .then((persons) => {
+      response.json(persons);
+    })
+    .catch((error) => next(error));
 });
 
-
-app.get("/api/persons/:id", (request, response) => {
-  const id = Number(request.params.id);
-  console.log(id);
-  const person = persons.find((person) => person.id === id);
-  console.log(person);
-
-  if (person) {
-    response.json(person);
-  } else {
-    response.status(404).send("No person in book by the given ID.");
-    console.log("No person in book by the given ID.");
-  }
+app.get("/api/persons/:id", (request, response, next) => {
+  PhoneBook.findById(request.params.id)
+    .then((note) => {
+      if (note) {
+        response.json(note);
+      } else {
+        response.status(404).end();
+      }
+    })
+    .catch((error) => next(error));
 });
 
-
-app.get("/info", (request, response) => {
-  const currentTime = new Date();
-  response.send(
-    `Number of persons in the list: ${persons.length}
-     <br>
-     Current Time: ${currentTime}`
-  );
+app.get("/info", (request, response, next) => {
+  PhoneBook.find({})
+    .then((persons) => {
+      const currentTime = new Date();
+      response.send(
+        `Number of persons in the list: ${persons.length}
+         <br>
+         Current Time: ${currentTime}`
+      );
+    })
+    .catch((error) => next(error));
 });
 
-app.post("/api/persons", (request, response) => {
+app.post("/api/persons", (request, response, next) => {
   const body = request.body;
   if (!body.name || !body.number) {
     // jos nimi tai numero puuttuvat
@@ -137,24 +132,26 @@ app.post("/api/persons", (request, response) => {
   persons = persons.concat(person);
   console.log("updated phonebook:");
   console.log(persons);
-  person.save().then(savedNote => {
-    response.json(savedNote)
-  })
+  person
+    .save()
+    .then((savedNote) => {
+      response.json(savedNote);
+    })
+    .catch((error) => next(error));
 });
-
 
 app.delete("/api/persons/:id", (request, response, next) => {
   PhoneBook.findByIdAndDelete(request.params.id)
-    .then(result =>{
-      response.status(204).end()
+    .then((result) => {
+      response.status(204).end();
     })
-    .catch(error => next(error))
+    .catch((error) => next(error));
 });
 
 app.use(unknownEndpoint);
-app.use(errorHandler)
+app.use(errorHandler);
 
-const PORT = process.env.PORT
+const PORT = process.env.PORT;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
