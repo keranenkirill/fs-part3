@@ -68,6 +68,7 @@ app.get("/", (request, response) => {
   response.send("<h1>Hello World!</h1>");
 });
 
+//haetaan koko puheliinnumeroluettelo
 app.get("/api/persons", (request, response, next) => {
   PhoneBook.find({})
     .then((persons) => {
@@ -76,6 +77,7 @@ app.get("/api/persons", (request, response, next) => {
     .catch((error) => next(error));
 });
 
+//hateaan tietyn ihmisen tiedot id:n perusteella
 app.get("/api/persons/:id", (request, response, next) => {
   PhoneBook.findById(request.params.id)
     .then((note) => {
@@ -101,6 +103,7 @@ app.get("/info", (request, response, next) => {
     .catch((error) => next(error));
 });
 
+//uuden ihmisen lisäämistoiminto huomioiden syötekenttien sisältö ja se, onko samalla nimellä oleva henkilö jo luettelossa
 app.post("/api/persons", (request, response, next) => {
   const body = request.body;
   if (!body.name || !body.number) {
@@ -140,6 +143,7 @@ app.post("/api/persons", (request, response, next) => {
     .catch((error) => next(error));
 });
 
+//poistetaan valittu käyttäjä id:n perusteella
 app.delete("/api/persons/:id", (request, response, next) => {
   PhoneBook.findByIdAndDelete(request.params.id)
     .then((result) => {
@@ -147,6 +151,22 @@ app.delete("/api/persons/:id", (request, response, next) => {
     })
     .catch((error) => next(error));
 });
+
+//päivitetään olemassa olevan käyttäjän tiedot (puhelinnumero)
+app.put("/api/persons/:id", (request, response, next) => {
+  const body = request.body
+  const person = {
+    name: body.name,
+    number: body.number
+  }
+
+  PhoneBook.findByIdAndUpdate(request.params.id, person, {new:true})
+  .then(updatedNoteBook =>{
+    response.json(updatedNoteBook)
+  })
+  .catch(error => next(error))
+})
+
 
 app.use(unknownEndpoint);
 app.use(errorHandler);
