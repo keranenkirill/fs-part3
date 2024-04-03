@@ -7,7 +7,6 @@ const cors = require("cors");
 //const mongodb = require("./mongo")
 
 const PhoneBook = require("C:/Users/keran/Documents/HY_KURSSIT/FullStack/fs-part3/modules/phonebook.js");
-const phonebook = require("C:/Users/keran/Documents/HY_KURSSIT/FullStack/fs-part3/modules/phonebook.js");
 
 app.use(express.static("dist"));
 
@@ -78,6 +77,7 @@ app.get("/api/persons", (request, response, next) => {
 });
 
 //hateaan tietyn ihmisen tiedot id:n perusteella
+//tulostaa 3.18* tehtävän mukaisesti tiedot, sekä virheen käsittely middlewareen
 app.get("/api/persons/:id", (request, response, next) => {
   PhoneBook.findById(request.params.id)
     .then((note) => {
@@ -90,6 +90,7 @@ app.get("/api/persons/:id", (request, response, next) => {
     .catch((error) => next(error));
 });
 
+//tulostuu listassa olevien määrän oikein, sekä virheenkäsittely middlewareen
 app.get("/info", (request, response, next) => {
   PhoneBook.find({})
     .then((persons) => {
