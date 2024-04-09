@@ -48,7 +48,7 @@ const addNewPerson = (password, name, number) => {
   // Tallennetaan uusi henkilö tietokantaan
   newPerson
     .save()
-    .then((result) => {
+    .then(() => {
       console.log(`Added ${name} with number ${number} into phonebook`)
       // Suljetaan yhteys tallentamisen jälkeen
       mongoose.connection.close()
